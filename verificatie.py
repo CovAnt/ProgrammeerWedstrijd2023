@@ -29,5 +29,6 @@ def verify(solution, input, output, subpath=""):
 
 if __name__ == '__main__':
     verify("doodlopend.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./doodlopend/")
-    verify("groen.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./groen/")
-    verify("korting.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./korting/")
+    #verify("groen.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./groen/")
+    #verify("korting.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./korting/")
+    verify("haven.py", "wedstrijd.invoer", "wedstrijd.uitvoer", "./haven/")
