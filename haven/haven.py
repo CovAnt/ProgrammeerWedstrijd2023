@@ -1,72 +1,70 @@
 def main():
-    numTests = int(input())
-    for test in range(numTests):
+    testCases = int(input())
+    for test in range(testCases):
         runTest(test)
 
 
 def runTest(testNr):
-    w, h = [int(i) for i in input().split(" ")]
+    width, height = [int(dimension) for dimension in input().split()]
+    grid, boatPositions = inputGrid(width, height)
+    grid = solveGrid(grid, boatPositions)
 
-    grid, boatPositions = inputGrid(h, w)
-
-    boatPositions = findAllBoatPositions(grid, boatPositions, set())
-    updated = True
-    while updated:
-        updated = False
-        for x, y in boatPositions:
-            if (x+1 < len(grid) and x-1 >= 0) and \
-                    (grid[x+1][y].difference(('.', '*')) != set() and grid[x-1][y].difference(('.', '*')) != set()):
-                grid[x+1][y].update(grid[x-1][y])
-                grid[x-1][y].update(grid[x+1][y])
-                updated = True
-            if (y+1 < len(grid[0]) and y-1 >= 0) and \
-                    (grid[x][y+1].difference(('.', '*')) != set() and grid[x][y-1].difference(('.', '*')) != set()):
-                grid[x][y+1].update(grid[x-1][y])
-                grid[x][y-1].update(grid[x+1][y])
-                updated = True
-            boatPositions.remove((x, y))
-
-    grid2, boatPositions = inputGrid(h, w)
     N = 0
-    for x in range(h):
-        for y in range(w):
-            if grid2[x][y].difference(grid[x][y]) != set():
+    for h in range(height):
+        row = input()
+        for w in range(width):
+            box = row[w]
+            if box in grid[(h, w)]:
+                grid[(h, w)].remove(box)
+            elif box not in {'.', '*'}:
                 N += 1
     print(f"{testNr+1} {N}")
 
 
-def inputGrid(h, w):
-    grid = [[set() for width in range(w)] for height in range(h)]
+def solveGrid(grid, boatPositions):
+    updated = True
+    usedPos = set()
+    while updated:
+        updated = False
+        newPos = set()
+        for pos in boatPositions.difference(usedPos):
+            for move in [(1, 0), (0, 1)]:
+                r, c = map(sum, zip(pos, move))
+                x, y = map(sum, zip(pos, [-m for m in move]))
+                if withinBounds(r, c, grid):
+                    if grid[(r, c)] == ['.']:
+                        grid[(r, c)] = grid[pos]
+                        newPos.add((r, c))
+                        updated = True
+                    elif grid[(r, c)] != ['*'] and withinBounds(x, y, grid):
+                        if grid[(x, y)][0] not in {'.', '*'}:
+                            grid[(r, c)].extend(grid[(x, y)])
+                            grid[(x, y)] = grid[(r, c)]
+                        else:
+                            grid[(x, y)] = grid[pos]
+                            newPos.add((x, y))
+                        updated = True
+            usedPos.add(pos)
+        boatPositions.update(newPos)
+
+    return grid
+
+
+def inputGrid(width, height):
+    grid = dict()
     boatPositions = set()
-    for height in range(h):
+    for h in range(height):
         row = input()
-        for width in range(w):
-            compartment = row[width]
-            if compartment == '*':
-                grid[height][width].add('.')
-                boatPositions.add((height, width))
-            grid[height][width].add(compartment)
+        for w in range(width):
+            box = row[w]
+            grid[(h, w)] = [box]
+            if box == '*':
+                boatPositions.add((h, w))
     return grid, boatPositions
 
 
-def findAllBoatPositions(grid, boatPositions, usedPositions):
-    while len(boatPositions.difference(usedPositions)) != 0:
-        for x, y in boatPositions.difference(usedPositions):
-            if x + 1 < len(grid) and grid[x + 1][y] == '.':
-                grid[x + 1][y].add('*')
-                boatPositions.add((x + 1, y))
-            if x - 1 >= 0 and grid[x - 1][y] == '.':
-                grid[x - 1][y].add('*')
-                boatPositions.add((x + 1, y))
-            if y + 1 < len(grid[0]) and grid[x][y + 1] == '.':
-                grid[x][y + 1].add('*')
-                boatPositions.add((x + 1, y))
-            if y - 1 >= 0 and grid[x][y - 1] == '.':
-                grid[x][y - 1].add('*')
-                boatPositions.add((x + 1, y))
-            usedPositions.add((x, y))
-
-    return boatPositions
+def withinBounds(x, y, grid):
+    return (x, y) in grid
 
 
 if __name__ == '__main__':
